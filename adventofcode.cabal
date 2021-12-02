@@ -45,3 +45,8 @@ executable 01_sonar_sweep
   import: bin, flags
   build-depends: base, adventofcode2021
   main-is:       01_sonar_sweep.hs
+
+executable 02_dive
+  import: bin, flags
+  build-depends: base, adventofcode2021
+  main-is:       02_dive.hs
