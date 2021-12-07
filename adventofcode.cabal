@@ -70,3 +70,8 @@ executable 06_lanternfish
   import: bin, flags
   build-depends: base, adventofcode2021, aocsplit
   main-is:       06_lanternfish.hs
+
+executable 07_crab_align
+  import: bin, flags
+  build-depends: base, adventofcode2021, aocsplit
+  main-is:       07_crab_align.hs
