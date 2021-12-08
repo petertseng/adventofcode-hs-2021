@@ -75,3 +75,8 @@ executable 07_crab_align
   import: bin, flags
   build-depends: base, adventofcode2021, aocsplit
   main-is:       07_crab_align.hs
+
+executable 08_seven_segment_search
+  import: bin, flags
+  build-depends: base, adventofcode2021, aocsplit, array
+  main-is:       08_seven_segment_search.hs
