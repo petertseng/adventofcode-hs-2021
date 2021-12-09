@@ -34,6 +34,12 @@ library
   exposed-modules: AdventOfCode
   build-depends:   base
 
+library aocsearch
+  import: flags
+  hs-source-dirs:  lib
+  exposed-modules: AdventOfCode.Search
+  build-depends:   base, containers
+
 library aocsplit
   import: flags
   hs-source-dirs:  lib
@@ -79,3 +85,8 @@ executable 08_seven_segment_search
   import: bin, flags
   build-depends: base, adventofcode2021, aocsplit, array, containers
   main-is:       08_seven_segment_search.hs
+
+executable 09_smoke_basin
+  import: bin, flags
+  build-depends: base, adventofcode2021, aocsearch, array
+  main-is:       09_smoke_basin.hs
