@@ -97,3 +97,8 @@ executable 10_syntax_scoring
   import: bin, flags
   build-depends: base, adventofcode2021
   main-is:       10_syntax_scoring.hs
+
+executable 11_dumbo_octopus
+  import: bin, flags
+  build-depends: base, adventofcode2021, containers
+  main-is:       11_dumbo_octopus.hs
