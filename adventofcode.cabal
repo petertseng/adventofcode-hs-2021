@@ -102,3 +102,8 @@ executable 11_dumbo_octopus
   import: bin, flags
   build-depends: base, adventofcode2021, containers
   main-is:       11_dumbo_octopus.hs
+
+executable 12_passage_pathing
+  import: bin, flags
+  build-depends: base, adventofcode2021, aocsplit, containers
+  main-is:       12_passage_pathing.hs
