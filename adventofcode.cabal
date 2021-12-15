@@ -117,3 +117,8 @@ executable 14_extended_polymerization
   import: bin, flags
   build-depends: base, adventofcode2021, containers
   main-is:       14_extended_polymerization.hs
+
+executable 15_chiton_pathfinding
+  import: bin, flags
+  build-depends: base, adventofcode2021, aocsearch, array
+  main-is:       15_chiton_pathfinding.hs
