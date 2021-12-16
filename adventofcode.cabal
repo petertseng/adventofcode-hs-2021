@@ -122,3 +122,8 @@ executable 15_chiton_pathfinding
   import: bin, flags
   build-depends: base, adventofcode2021, aocsearch, array
   main-is:       15_chiton_pathfinding.hs
+
+executable 16_packet_decoder
+  import: bin, flags
+  build-depends: base, adventofcode2021
+  main-is:       16_packet_decoder.hs
