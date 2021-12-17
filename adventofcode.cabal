@@ -127,3 +127,8 @@ executable 16_packet_decoder
   import: bin, flags
   build-depends: base, adventofcode2021
   main-is:       16_packet_decoder.hs
+
+executable 17_trick_shot
+  import: bin, flags
+  build-depends: base, adventofcode2021, aocsplit, containers
+  main-is:       17_trick_shot.hs
