@@ -137,3 +137,8 @@ executable 18_snailfish_math
   import: bin, flags
   build-depends: base, adventofcode2021
   main-is:       18_snailfish_math.hs
+
+executable 19_beacon_scanner
+  import: bin, flags
+  build-depends: base, adventofcode2021, aocsplit, containers
+  main-is:       19_beacon_scanner.hs
