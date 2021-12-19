@@ -20,7 +20,7 @@ None yet.
 
 ## Closing thoughts
 
-None yet.
+Day 19 was interesting since I think it's the first time I've used the Applicative (or Monad) instance of [].
 
 ## Past solutions
 
