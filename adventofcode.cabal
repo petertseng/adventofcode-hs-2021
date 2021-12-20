@@ -142,3 +142,8 @@ executable 19_beacon_scanner
   import: bin, flags
   build-depends: base, adventofcode2021, aocsplit, containers
   main-is:       19_beacon_scanner.hs
+
+executable 20_trench_map
+  import: bin, flags
+  build-depends: base, adventofcode2021, array, containers
+  main-is:       20_trench_map.hs
