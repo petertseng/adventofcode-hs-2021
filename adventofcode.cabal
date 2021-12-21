@@ -147,3 +147,8 @@ executable 20_trench_map
   import: bin, flags
   build-depends: base, adventofcode2021, array, containers
   main-is:       20_trench_map.hs
+
+executable 21_dirac_dice
+  import: bin, flags
+  build-depends: base, adventofcode2021, containers
+  main-is:       21_dirac_dice.hs
