@@ -152,3 +152,8 @@ executable 21_dirac_dice
   import: bin, flags
   build-depends: base, adventofcode2021, containers
   main-is:       21_dirac_dice.hs
+
+executable 22_reactor_reboot
+  import: bin, flags
+  build-depends: base, adventofcode2021, aocsplit, containers
+  main-is:       22_reactor_reboot.hs
