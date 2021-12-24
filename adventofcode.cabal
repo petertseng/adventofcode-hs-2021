@@ -157,3 +157,8 @@ executable 22_reactor_reboot
   import: bin, flags
   build-depends: base, adventofcode2021, aocsplit, containers
   main-is:       22_reactor_reboot.hs
+
+executable 24_arithmetic_logic_unit
+  import: bin, flags
+  build-depends: base, adventofcode2021, containers
+  main-is:       24_arithmetic_logic_unit.hs
