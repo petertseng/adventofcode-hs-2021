@@ -162,3 +162,8 @@ executable 24_arithmetic_logic_unit
   import: bin, flags
   build-depends: base, adventofcode2021, containers
   main-is:       24_arithmetic_logic_unit.hs
+
+executable 25_sea_cucumber
+  import: bin, flags
+  build-depends: base, adventofcode2021
+  main-is:       25_sea_cucumber.hs
