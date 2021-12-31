@@ -1,67 +1,67 @@
 import AdventOfCode (readInputFile)
 
-import Control.Arrow ((&&&))
+import Control.Arrow (first, second)
 import Data.Char (digitToInt, isDigit)
-import Data.List (unfoldr)
+import Data.List (foldl')
 
-data Snailfish = Reg Int | Pair Snailfish Snailfish deriving (Eq, Show)
+type Snailfish = [(Int, Int)]
+
+add :: Snailfish -> Snailfish -> Snailfish
+add a b = map (first succ) (a ++ b)
 
 reduce :: Snailfish -> Snailfish
-reduce sf = last (sf : unfoldr (fmap (id &&& id) . explodeOrSplit) sf)
+reduce = split . explode
 
-explodeOrSplit :: Snailfish -> Maybe Snailfish
-explodeOrSplit sf = case explode 0 sf of
-  Just (_, _, sf') -> Just sf'
-  Nothing -> split sf
+explode :: Snailfish -> Snailfish
+explode = drop 1 . explode' (-1, -1)
 
-explode :: Int -> Snailfish -> Maybe (Int, Int, Snailfish)
-explode _ (Reg _) = Nothing
-explode 4 (Pair (Reg l) (Reg r)) = Just (l, r, Reg 0)
-explode lvl sf | lvl >= 4 = error ("bad explode " ++ show (lvl, sf))
-explode lvl (Pair l r) = case explode (lvl + 1) l of
-  Just (ladd, radd, l') -> Just (ladd, 0, Pair l' (addLeft radd r))
-  Nothing -> fmap (\(ladd, radd, r') -> (0, radd, Pair (addRight ladd l) r')) (explode (lvl + 1) r)
+explode' :: (Int, Int) -> Snailfish -> Snailfish
+explode' (d, n) [] = [(d, n)]
+explode' _ ((d, _):_) | d > 5 = error "bad depth"
+explode' _ [(d, _)] | d == 5 = error "can't explode single"
+explode' _ ((d1, _):(d2, _):_) | d1 == 5 && d1 /= d2 = error "inconsistent depth"
+explode' (pd, pn) ((d1, n1):(_, n2):xs) | d1 >= 5 = (pd, pn + n1) : explode' (d1 - 1, 0) (headAdd n2 xs)
+explode' prev ((d, n):xs) = prev : explode' (d, n) xs
 
-addLeft :: Int -> Snailfish -> Snailfish
-addLeft 0 sf = sf
-addLeft a (Reg n) = Reg (n + a)
-addLeft a (Pair l r) = Pair (addLeft a l) r
+split :: Snailfish -> Snailfish
+split = split' []
 
-addRight :: Int -> Snailfish -> Snailfish
-addRight 0 sf = sf
-addRight a (Reg n) = Reg (n + a)
-addRight a (Pair l r) = Pair l (addRight a r)
-
-split :: Snailfish -> Maybe Snailfish
-split (Reg n) | n < 10 = Nothing
-split (Reg n) = Just (Pair (Reg (n `quot` 2)) (Reg (n - (n `quot` 2))))
-split (Pair l r) = case split l of
-  Just l' -> Just (Pair l' r)
-  Nothing -> fmap (Pair l) (split r)
+split' :: Snailfish -> Snailfish -> Snailfish
+split' lefts [] = reverse lefts
+split' _ ((d, _):_) | d > 4 = error "bad depth"
+split' [] ((d, n):xs) | d == 4 && n >= 10 = split' [(d, 0)] (headAdd ((n + 1) `quot` 2) xs)
+split' ((ld, ln):lefts) ((d, n):xs) | d == 4 && n >= 10 = split' lefts ((ld, ln + (n `quot` 2)) : (d, 0) : headAdd ((n + 1) `quot` 2) xs)
+split' lefts ((d, n):xs) | n >= 10 = split' lefts ((d + 1, n `quot` 2) : (d + 1, (n + 1) `quot` 2) : xs)
+split' lefts (x:xs) = split' (x : lefts) xs
 
 magnitude :: Snailfish -> Int
-magnitude (Pair l r) = 3 * magnitude l + 2 * magnitude r
-magnitude (Reg n) = n
+magnitude = magnitude' []
+
+magnitude' :: Snailfish -> Snailfish -> Int
+magnitude' [] [] = 0
+magnitude' [(0, n)] [] = n
+magnitude' lefts [] = error ("bad final magnitude " ++ show lefts)
+magnitude' ((ld, ln):lefts) ((d, n):xs) | ld == d = magnitude' lefts ((d - 1, ln * 3 + n * 2) : xs)
+magnitude' lefts (x:xs) = magnitude' (x : lefts) xs
+
+headAdd :: Int -> Snailfish -> Snailfish
+headAdd n = headMap (second (+ n))
+
+headMap :: (a -> a) -> [a] -> [a]
+headMap _ [] = []
+headMap f (x:xs) = f x : xs
 
 snailfish :: String -> Snailfish
-snailfish s0 = case snailfish' s0 of
-  (sf, "") -> sf
-  (sf, s) -> error ("unparsed " ++ s ++ " after " ++ show sf)
-  where
-    snailfish' :: String -> (Snailfish, String)
-    snailfish' (d:s) | isDigit d = (Reg (digitToInt d), s)
-    snailfish' (',':s) = snailfish' s
-    snailfish' ('[':s) =
-      let (l, s2) = snailfish' s
-          (r, s3) = snailfish' s2
-      in case s3 of
-        (']':s4) -> (Pair l r, s4)
-        _ -> error ("expected ] to close snailfish not " ++ s3)
-    snailfish' s = error ("bad smallfish " ++ s)
+snailfish = reverse . fst . foldl' sn ([], 0)
+  where sn (nums, d) '[' = (nums, d + 1)
+        sn (nums, d) ',' = (nums, d)
+        sn (nums, d) c | isDigit c = ((d, digitToInt c) : nums, d)
+        sn (nums, d) ']' = (nums, d - 1)
+        sn _ c = error (c : " bad")
 
 main :: IO ()
 main = do
   s <- readInputFile
   let hw = map snailfish (lines s)
-  print (magnitude (foldl1 (\a b -> reduce (Pair a b)) hw))
-  print (maximum [magnitude (reduce (Pair a b)) | a <- hw, b <- hw, a /= b])
+  print (magnitude (foldl1 (\a b -> reduce (add a b)) hw))
+  print (maximum [magnitude (reduce (add a b)) | a <- hw, b <- hw, a /= b])
