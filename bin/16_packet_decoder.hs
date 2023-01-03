@@ -1,61 +1,72 @@
 import AdventOfCode (readInputFile)
 
 import Control.Arrow (first)
-import Control.Monad (unless)
-import Data.List (foldl', mapAccumL)
+import Control.Monad (replicateM, unless)
+import Data.List (foldl')
 
-packet :: [Bool] -> ((Int, Int), [Bool])
-packet b = ((vers + sum (map fst subs), val), b4)
-  where
-    (vers, b1) = num 3 b
-    (t, b2) = num 3 b1
-    subs :: [(Int, Int)]
-    (subs, b3) = if t == 4 then ([], b2) else case bit b2 of
-      (False, b5) ->
-        let (tlen, b6) = num 15 b5 in first packets (splitAt tlen b6)
-      (True, b5) ->
-        let (tnum, b6) = num 11 b5
-            f :: [Bool] -> Int -> ([Bool], (Int, Int))
-            f b' _ = tflip (packet b') in
-            tflip (mapAccumL f b6 [1 .. tnum])
-    (val, b4) = if t == 4 then literal b2 else
-      let svals = map snd subs
-          binop f = case svals of
-            [x, y] -> if f x y then 1 else 0
-            _ -> error ("binop needs two vals not " ++ show svals)
-          v = case t of
-            0 -> sum svals
-            1 -> product svals
-            2 -> minimum svals
-            3 -> maximum svals
-            5 -> binop (>)
-            6 -> binop (<)
-            7 -> binop (==)
-            _ -> error ("bad type " ++ show t)
-       in (v, b3)
+newtype Parser a = Parser {parse :: [Bool] -> (a, [Bool])}
 
-literal :: [Bool] -> (Int, [Bool])
+instance Functor Parser where
+  fmap f (Parser p) = Parser (first f . p)
+
+instance Applicative Parser where
+  pure x = Parser (\y -> (x, y))
+  Parser l <*> Parser r = Parser (\x -> let (l', rest) = l x in first l' (r rest))
+
+instance Monad Parser where
+  return = pure
+  Parser l >>= r = Parser (\x -> let (l', rest) = l x in parse (r l') rest)
+
+packet :: Parser (Int, Int)
+packet = do
+  vers <- num 3
+  t <- num 3
+  subs <- if t == 4 then return [] else do
+    lengthTypeNum <- bit
+    if lengthTypeNum then do
+      tnum <- num 11
+      replicateM tnum packet
+    else do
+      tlen <- num 15
+      packets tlen
+  val <- if t == 4 then literal else do
+    let svals = map snd subs
+        binop f = case svals of
+          [x, y] -> if f x y then 1 else 0
+          _ -> error ("binop needs two vals not " ++ show svals)
+        v = case t of
+          0 -> sum svals
+          1 -> product svals
+          2 -> minimum svals
+          3 -> maximum svals
+          5 -> binop (>)
+          6 -> binop (<)
+          7 -> binop (==)
+          _ -> error ("bad type " ++ show t)
+    return v
+  return (vers + sum (map fst subs), val)
+
+literal :: Parser Int
 literal = val 0
-  where
-    val acc b0 = if more then val acc' b2 else (acc', b2)
-      where (more, b1) = bit b0
-            (v, b2) = num 4 b1
-            acc' = acc * 16 + v
+  where val acc = do
+          more <- bit
+          v <- num 4
+          (if more then val else return) (acc * 16 + v)
 
-packets :: [Bool] -> [(Int, Int)]
-packets [] = []
-packets xs = let (p, xs') = packet xs in p : packets xs'
+packets :: Int -> Parser [(Int, Int)]
+packets bitlen = Parser (first packets' . splitAt bitlen)
+  where packets' :: [Bool] -> [(Int, Int)]
+        packets' [] = []
+        packets' xs = let (a, xs') = parse packet xs in a : packets' xs'
 
-num :: Int -> [Bool] -> (Int, [Bool])
-num len bits = first (foldl' f 0) (splitAt len bits)
+num :: Int -> Parser Int
+num len = Parser (first (foldl' f 0) . splitAt len)
   where f acc b = acc * 2 + (if b then 1 else 0)
 
-bit :: [Bool] -> (Bool, [Bool])
-bit (x:xs) = (x, xs)
-bit [] = error "no bit"
-
-tflip :: (a, b) -> (b, a)
-tflip (a, b) = (b, a)
+bit :: Parser Bool
+bit = Parser bit'
+  where bit' (x:xs) = (x, xs)
+        bit' [] = error "no bit"
 
 ctob :: Char -> [Bool]
 ctob '0' = [False, False, False, False]
@@ -80,7 +91,7 @@ ctob c = error (c : " bad")
 main :: IO ()
 main = do
   s <- readInputFile
-  let ((ver, val), unparsed) = packet (concatMap ctob s)
+  let ((ver, val), unparsed) = parse packet (concatMap ctob s)
   print ver
   print val
   unless (all not unparsed) $ error ("unparsed " ++ show unparsed)
