@@ -20,6 +20,9 @@ None yet.
 
 ## Closing thoughts
 
+Day 16 was my first use of a monadic parser.
+The code was much easier to read than the manual parser.
+
 Day 19 was interesting since I think it's the first time I've used the Applicative (or Monad) instance of [].
 
 ## Past solutions
